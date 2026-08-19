@@ -1,0 +1,24 @@
+name: Valider les outils
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v6
+      - name: Vérifier la syntaxe Python
+        run: |
+          python3 -m py_compile \
+            images/link/linkemu.py \
+            images/toolbox/netprobe.py \
+            images/toolbox/udp_echo.py
+      - name: Exécuter les tests unitaires
+        run: python3 -m unittest discover -s tests -v

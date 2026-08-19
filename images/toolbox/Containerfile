@@ -26,6 +26,11 @@ RUN apt-get update \
         tshark \
     && rm -rf /var/lib/apt/lists/*
 
+
+COPY netprobe.py /usr/local/bin/netprobe
+COPY udp_echo.py /usr/local/bin/udp-echo
+RUN chmod 0755 /usr/local/bin/netprobe /usr/local/bin/udp-echo
+
 LABEL org.opencontainers.image.title="Boîte à outils réseau LOG100" \
       org.opencontainers.image.description="Outils réseau en ligne de commande compatibles avec Podman sans privilèges"
 

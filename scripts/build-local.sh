@@ -6,7 +6,7 @@ TAG=${TAG:-dev}
 PREFIX=${PREFIX:-localhost/log100-net}
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 
-for image in toolbox web dns; do
+for image in toolbox web dns link; do
     printf 'Construction de %s-%s:%s\n' "$PREFIX" "$image" "$TAG"
     "$RUNTIME" build \
         --tag "${PREFIX}-${image}:${TAG}" \

@@ -24,6 +24,8 @@ jobs:
             package: log100-net-web
           - component: dns
             package: log100-net-dns
+          - component: link
+            package: log100-net-link
 
     steps:
       - name: Récupérer le dépôt

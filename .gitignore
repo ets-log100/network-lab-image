@@ -1,2 +1,73 @@
+# IDEs and editors
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Container build artifacts
 *.tar
+*.tar.gz
+*.tgz
 *.oci
+*.img
+
+# Local test/output directories
+build/
+dist/
+out/
+tmp/
+.cache/
+artifacts/
+
+# Podman / container runtime scratch data
+.podman/
+containers/
+volumes/
+
+# Test results
+test-results/
+coverage/
+
+# Generated files
+generated/
+
+# Local overrides
+*.local
+local/
