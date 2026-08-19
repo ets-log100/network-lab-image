@@ -1,0 +1,10 @@
+$TTL 60
+@   IN SOA ns.health.log100. admin.health.log100. (
+        2026081901 ; serial
+        60         ; refresh
+        60         ; retry
+        3600       ; expire
+        60 )       ; minimum
+    IN NS ns.health.log100.
+    IN A 127.0.0.1
+ns  IN A 127.0.0.1

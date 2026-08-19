@@ -1,0 +1,33 @@
+ARG BASE_IMAGE=ubuntu:24.04
+FROM ${BASE_IMAGE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        dnsutils \
+        ethtool \
+        iperf3 \
+        iproute2 \
+        iputils-ping \
+        iputils-tracepath \
+        jq \
+        mtr-tiny \
+        netcat-openbsd \
+        openssl \
+        procps \
+        psmisc \
+        python3 \
+        socat \
+        tcpdump \
+        traceroute \
+        tshark \
+    && rm -rf /var/lib/apt/lists/*
+
+LABEL org.opencontainers.image.title="Boîte à outils réseau LOG100" \
+      org.opencontainers.image.description="Outils réseau en ligne de commande compatibles avec Podman sans privilèges"
+
+WORKDIR /work
+CMD ["bash"]

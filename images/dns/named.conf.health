@@ -1,0 +1,4 @@
+zone "health.log100" {
+    type master;
+    file "/etc/bind/db.health.log100";
+};

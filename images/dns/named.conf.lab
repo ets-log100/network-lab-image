@@ -1,0 +1,1 @@
+// Lab repositories mount their zone declarations at /etc/bind/lab/named.conf.lab.
