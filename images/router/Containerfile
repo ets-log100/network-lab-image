@@ -1,0 +1,20 @@
+ARG BASE_IMAGE=ghcr.io/ets-log100/log100-net-toolbox@sha256:6b08ca9dba2fb089cd95d3e485d2392597cc4704cb5e87fd29da725024f4cec4
+FROM ${BASE_IMAGE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        frr \
+        frr-pythontools \
+    && rm -rf /var/lib/apt/lists/* \
+    && sed -ri 's/^zebra=.*/zebra=yes/; s/^ospfd=.*/ospfd=yes/' /etc/frr/daemons \
+    && printf 'service integrated-vtysh-config\n' > /etc/frr/vtysh.conf \
+    && chown frr:frr /etc/frr/vtysh.conf \
+    && chmod 0644 /etc/frr/vtysh.conf
+
+LABEL org.opencontainers.image.title="Routeur OSPF LOG100" \
+      org.opencontainers.image.description="Boîte à outils LOG100 avec FRRouting pour les expériences OSPF"
+
+WORKDIR /work
+CMD ["bash"]

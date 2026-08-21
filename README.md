@@ -2,7 +2,7 @@
 
 Images OCI génériques pour les laboratoires de réseautique de LOG100.
 
-Ce dépôt contient des **environnements génériques pour le cours**, et non des réponses ou des configurations propres à un laboratoire. Les dépôts `network-labN-*` fournissent les scénarios, les fichiers de configuration et les données nécessaires à chaque expérience.
+Ce dépôt contient des environnements génériques pour le cours, et non des réponses ou des configurations propres à un laboratoire. Les dépôts `network-labN-*` fournissent les scénarios, les fichiers de configuration et les données nécessaires à chaque expérience.
 
 ## Images
 
@@ -12,10 +12,11 @@ Ce dépôt contient des **environnements génériques pour le cours**, et non de
 | `images/web` | `log100-net-web` | Point de terminaison HTTP/HTTPS local et contrôlé |
 | `images/dns` | `log100-net-dns` | Service DNS BIND local et contrôlé |
 | `images/link` | `log100-net-link` | Émulation de conditions réseau TCP/UDP en espace utilisateur |
+| `images/router` | `log100-net-router` | Boîte à outils réseau avec FRRouting pour les expériences OSPF |
 
-## L’image `log100-net-link`
+## L'image `log100-net-link`
 
-`log100-net-link` est conçue pour les postes ÉTS utilisant Podman sans privilèges. Elle **ne configure pas `tc`, `netem`, `nftables` ni les interfaces du noyau**. Elle relaie plutôt des flux TCP et des datagrammes UDP entre deux réseaux Podman et applique des conditions contrôlées en espace utilisateur.
+`log100-net-link` relaie des flux TCP et des datagrammes UDP entre deux réseaux Podman et applique des conditions contrôlées.
 
 Paramètres principaux :
 
@@ -29,32 +30,25 @@ LINK_UDP_LOSS_PERCENT=2
 LINK_SEED=1001
 ```
 
-La capacité est appliquée aux flux TCP et aux datagrammes transférés. La perte configurée s’applique uniquement aux datagrammes UDP dans le sens client → service; elle sert à produire une expérience de perte contrôlée sans prétendre émuler exactement la file d’attente d’une interface physique.
+La capacité est appliquée aux flux TCP et aux datagrammes transférés. La perte configurée s'applique uniquement aux datagrammes UDP dans le sens client vers service.
 
-Le délai est appliqué dans chaque direction. Ainsi, une configuration de `20 ms` produit normalement un RTT applicatif proche de `40 ms`, auquel s’ajoutent les délais d’exécution locaux.
+## L'image `log100-net-router`
 
-Cette image vise la **reproductibilité pédagogique**, pas la fidélité d’un émulateur de réseau de recherche. Les laboratoires doivent l’indiquer explicitement lorsqu’ils interprètent les mesures.
+`log100-net-router` dérive de `log100-net-toolbox` et ajoute FRRouting. Les démons `zebra` et `ospfd` sont activés dans `/etc/frr/daemons`.
+
+Les configurations OSPF propres aux laboratoires ne sont pas intégrées à l'image. Elles sont copiées dans les conteneurs depuis le dépôt du laboratoire avant le démarrage de FRRouting.
+
+Cette séparation permet de réutiliser la même image de routeur pour plusieurs topologies.
 
 ## Outils supplémentaires dans `toolbox`
 
 ### `netprobe`
 
-`netprobe` envoie de petites sondes UDP à un service d’écho et rapporte :
-
-- nombre de sondes envoyées et reçues;
-- pourcentage de perte;
-- RTT minimum, moyen et maximum;
-- variation moyenne absolue entre deux RTT successifs.
-
-Exemple :
-
-```bash
-netprobe link --count 20 --json
-```
+`netprobe` envoie de petites sondes UDP à un service d'écho et rapporte le nombre de sondes, la perte, le RTT et une mesure simple de variation.
 
 ### `udp-echo`
 
-Serveur d’écho UDP minimal utilisé derrière `log100-net-link` :
+Serveur d'écho UDP minimal :
 
 ```bash
 udp-echo --port 7000
@@ -66,14 +60,7 @@ udp-echo --port 7000
 ./scripts/build-local.sh
 ```
 
-Cette commande produit :
-
-```text
-localhost/log100-net-toolbox:dev
-localhost/log100-net-web:dev
-localhost/log100-net-dns:dev
-localhost/log100-net-link:dev
-```
+Cette commande produit les images locales `localhost/log100-net-*:dev`, y compris `localhost/log100-net-router:dev`.
 
 Exécutez ensuite :
 
@@ -81,32 +68,25 @@ Exécutez ensuite :
 ./scripts/smoke-test.sh
 ```
 
-Le test crée deux réseaux Podman, place `log100-net-link` entre le client et les services, puis vérifie HTTP, les sondes UDP, le débit TCP et DNS sans utiliser le mode privilégié.
-
 ## Publication sur GHCR
 
-Le flux GitHub Actions construit les quatre images à l’aide d’une matrice et les publie vers :
-
-```text
-ghcr.io/<organization>/log100-net-toolbox
-ghcr.io/<organization>/log100-net-web
-ghcr.io/<organization>/log100-net-dns
-ghcr.io/<organization>/log100-net-link
-```
+Le flux GitHub Actions construit les images et les publie vers `ghcr.io/<organization>/log100-net-*`.
 
 Politique de publication recommandée :
 
 - `edge` : branche principale courante;
 - `vX.Y.Z` : version publiée;
-- `sha-...` : traçabilité de l’intégration continue;
-- les laboratoires évalués utilisent idéalement un **digest OCI immuable**.
+- `sha-...` : traçabilité de l'intégration continue;
+- les laboratoires évalués utilisent un digest OCI immuable.
 
 Exemple :
 
 ```text
-ghcr.io/<organization>/log100-net-link@sha256:...
+ghcr.io/<organization>/log100-net-router@sha256:...
 ```
 
 ## Politique concernant les privilèges
 
-Les images de base de ce dépôt doivent fonctionner avec Podman rootless. Toute future image nécessitant une capacité supplémentaire doit être documentée et validée sur les postes ÉTS avant d’être utilisée dans un laboratoire évalué.
+Les images de base de ce dépôt doivent fonctionner avec Podman rootless. Toute image nécessitant une capacité supplémentaire doit être documentée et validée sur les postes ÉTS avant d'être utilisée dans un laboratoire évalué.
+
+`log100-net-router` est destiné à être lancé avec les capacités `NET_RAW` et `NET_ADMIN`, sans mode `--privileged`.

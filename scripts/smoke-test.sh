@@ -12,9 +12,10 @@ SERVER="log100-image-server-$SUFFIX"
 LINK="log100-image-link-$SUFFIX"
 CLIENT="log100-image-client-$SUFFIX"
 DNS="log100-image-dns-$SUFFIX"
+ROUTER="log100-image-router-$SUFFIX"
 
 cleanup() {
-    "$RUNTIME" rm -f "$CLIENT" "$LINK" "$SERVER" "$WEB" "$DNS" >/dev/null 2>&1 || true
+    "$RUNTIME" rm -f "$CLIENT" "$LINK" "$SERVER" "$WEB" "$DNS" "$ROUTER" >/dev/null 2>&1 || true
     "$RUNTIME" network rm -f "$FRONT" "$BACK" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -80,4 +81,11 @@ result=$("$RUNTIME" exec "$CLIENT" dig +short +time=1 +tries=1 @dns health.log10
 [[ "$result" == "127.0.0.1" ]]
 printf 'Test de fumée DNS : OK\n'
 
-printf 'Tous les tests de fumée des images ont réussi.\n'
+"$RUNTIME" run -d --name "$ROUTER" --network "$FRONT" \
+    --cap-add NET_RAW --cap-add NET_ADMIN \
+    "${PREFIX}-router:${TAG}" sleep infinity >/dev/null
+"$RUNTIME" exec "$ROUTER" sh -lc \
+    'test -x /usr/lib/frr/ospfd && command -v vtysh >/dev/null && grep -q "^ospfd=yes" /etc/frr/daemons'
+printf 'Test de fumée FRRouting : OK\n'
+
+printf 'Tous les tests de fumée des images ont réussi.\n' 
